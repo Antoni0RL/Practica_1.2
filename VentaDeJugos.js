@@ -5,93 +5,70 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
-rl.question('¿Qué bebida va a pedir?: ', (jugo1) => {
-  let jugo = jugo1.toLowerCase();
-  let lista_jugos = ["pure strawberry joy", "energizer", "green garden", "tropical island", "all or nothing", "oferta especial"];
-  let lista_tiempo = [0.5, 1.5, 1.5, 3, 5, 2.5];
-  let coin = 0;
-  let i = 0;
+let lista_jugos = ["pure strawberry joy", "energizer", "green garden", "tropical island", "all or nothing", "oferta especial"];
+let lista_tiempo = [0.5, 1.5, 1.5, 3, 5, 2.5];
+let tiempoTotalPreparacion = 0;
 
-  function timeToMixJuice(jugo) {
-    while (coin === 0) {
-      if (jugo === lista_jugos[i]) {
-        coin = 1;
-        console.log(jugo + " tardará " + lista_tiempo[i] + " minutos");
-        break;
-      }
-      i++;
-    }
+rl.question('¿Qué bebida va a pedir?: ', (jugo) => {
+  jugo = jugo.toLowerCase();
+  let index = lista_jugos.indexOf(jugo);
+  if (index !== -1) {
+    console.log(jugo + " tardará " + lista_tiempo[index] + " minutos");
+    tiempoTotalPreparacion += lista_tiempo[index];
+  } else {
+    console.log("El jugo ingresado no está en la lista.");
   }
-  timeToMixJuice(jugo);
 
   console.log("-----------------");
 
   rl.question("¿Cuántas rodajas de lima necesitas?: ", (neededSlices) => {
     rl.question('Introduce el tamaño de las limas (separadas por comas): ', (limasStr) => {
       const limes = limasStr.split(',');
-      function limesToCut(neededSlices, limes) {
-        let totalSlices = 0;
-        let i = 0;
+      let totalSlices = 0;
 
-        while (totalSlices < neededSlices) {
-          switch (limes[i]) {
-            case "pequeña":
-              totalSlices += 6;
-              break;
-            case "mediana":
-              totalSlices += 8;
-              break;
-            case "grande":
-              totalSlices += 10;
-              break;
-          }
-          i++;
+      for (let i = 0; i < limes.length; i++) {
+        switch (limes[i]) {
+          case "pequeña":
+            totalSlices += 6;
+            break;
+          case "mediana":
+            totalSlices += 8;
+            break;
+          case "grande":
+            totalSlices += 10;
+            break;
         }
-
-        return i;
       }
-      const limesToCutResult = limesToCut(neededSlices, limes);
-      console.log(`Se necesitan ${limesToCutResult} limas para obtener ${neededSlices} rodajas.`);
+
+      console.log(`Se necesitan ${totalSlices} limas para obtener ${neededSlices} rodajas.`);
 
       console.log("-----------------");
 
-
       rl.question("¿Cuántos minutos quedan en el turno?: ", (minutesLeft) => {
         rl.question('Introduce los jugos que faltan por preparar (separados por comas): ', (jugosPendientes) => {
-          function splitList(jugosPendientes, minutesLeft) {
-            let tiempoTotalPreparacion = 0;
-            const jugosPreparables = [];
-            const jugosRestantes = [];
-            let indiceActual = 0;
+          let jugosPreparables = [];
+          let jugosRestantes = [];
+          const pendientes = jugosPendientes.split(',');
 
-            while (indiceActual < jugosPendientes.length) {
-              const jugoActual = jugosPendientes[indiceActual];
-              let tiempoPreparacionActual = 0;
-
-              for (let i = 0; i < lista_jugos.length; i++) {
-                if (jugoActual === lista_jugos[i]) {
-                  tiempoPreparacionActual = lista_tiempo[i];
-                  break;
-                }
-              };
-
-              if (tiempoTotalPreparacion + tiempoPreparacionActual <= minutesLeft) {
-                tiempoTotalPreparacion += tiempoPreparacionActual;
-                jugosPreparables.push(jugoActual);
-                indiceActual++;
+          for (let i = 0; i < pendientes.length; i++) {
+            let index = lista_jugos.indexOf(pendientes[i].trim());
+            if (index !== -1) {
+              if (tiempoTotalPreparacion + lista_tiempo[index] <= minutesLeft) {
+                tiempoTotalPreparacion += lista_tiempo[index];
+                jugosPreparables.push(pendientes[i]);
               } else {
-                jugosRestantes.push(jugoActual);
-                break;
+                jugosRestantes.push(pendientes[i]);
               }
+            } else {
+              console.log(`El jugo "${pendientes[i]}" no está en la lista.`);
             }
-
-            console.log("Jugos preparables:", jugosPreparables.join(''));
-            console.log("Jugos restantes:", jugosRestantes.join(''));
-            console.log("Tiempo total de preparación:", tiempoTotalPreparacion, "minutos");
-
-            rl.close();
           }
-          splitList(jugosPendientes, minutesLeft);
+
+          console.log("Jugos preparables:", jugosPreparables.join(''));
+          console.log("Jugos restantes:", jugosRestantes.join(''));
+          console.log("Tiempo total de preparación:", tiempoTotalPreparacion, "minutos");
+
+          rl.close();
         });
       });
     });
